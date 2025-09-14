@@ -1,0 +1,41 @@
+# Railway Hobby 플랜 최적화 Dockerfile
+# 보고서 권장사항: 공식 Ollama 이미지 + 초경량 모델 사전 로딩
+
+FROM ollama/ollama
+
+# 초경량 모델 사전 설치 (tinyllama: 637MB)
+ARG MODEL_TO_INSTALL=tinyllama
+
+# 빌드 시 모델 다운로드 (콜드 스타트 최소화)
+RUN ollama serve & sleep 10 && \
+    ollama pull ${MODEL_TO_INSTALL} && \
+    ollama pull nomic-embed-text && \
+    pkill ollama
+
+# Python 환경 추가 설치
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# FastAPI 앱 복사
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+COPY railway-optimized.py .
+
+# 환경 변수
+ENV OLLAMA_HOST=0.0.0.0:11434
+ENV OLLAMA_KEEP_ALIVE=5m
+ENV PORT=5050
+
+# 헬스체크
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:5050/health || exit 1
+
+# 시작 스크립트
+COPY start.sh .
+RUN chmod +x start.sh
+
+CMD ["./start.sh"]

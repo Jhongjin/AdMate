@@ -1,0 +1,17 @@
+# 간단한 Railway 배포용 Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 의존성 설치
+COPY requirements-optimized.txt requirements.txt
+RUN pip install -r requirements.txt
+
+# 앱 복사
+COPY railway-optimized.py app.py
+
+# 포트 설정
+EXPOSE 5050
+
+# 앱 실행
+CMD ["python", "app.py"]

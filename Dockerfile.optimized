@@ -1,0 +1,36 @@
+# Railway Hobby 플랜 최적화 Dockerfile
+FROM python:3.11-slim
+
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 시스템 패키지 최소 설치 (메모리 절약)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Python 최적화 설정
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONPATH=/app
+
+# requirements 복사 및 설치 (캐시 최적화)
+COPY requirements-optimized.txt requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# 애플리케이션 코드 복사
+COPY railway-optimized.py .
+
+# 포트 설정
+EXPOSE 5050
+ENV PORT=5050
+
+# 헬스체크 추가
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5050/health || exit 1
+
+# 최적화된 앱 실행
+CMD ["python", "railway-optimized.py"]

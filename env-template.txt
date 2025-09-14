@@ -1,0 +1,15 @@
+# Railway 환경 변수 설정 가이드
+# Railway 대시보드에서 다음 환경 변수들을 설정하세요:
+
+# Ollama 설정
+OLLAMA_BASE_URL=http://ollama:11434
+EMBEDDING_MODEL=nomic-embed-text:latest
+LLM_MODEL=llama3.2:1b
+
+# Supabase 설정 (실제 값으로 교체)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your_supabase_anon_key
+
+# 서비스 설정
+ENVIRONMENT=production
+PORT=5050
